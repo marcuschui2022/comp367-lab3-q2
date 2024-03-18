@@ -1,4 +1,4 @@
-namespace MVCAgileProcess.Models
+namespace MvcMovie.Models
 {
     public class ErrorViewModel
     {
