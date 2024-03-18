@@ -5,38 +5,53 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using MVCAgileProcess.Data;
-using MVCAgileProcess.Models;
+using MvcMovie.Data;
+using MvcMovie.Models;
 
-namespace MVCAgileProcess.Controllers
+namespace MvcMovie.Controllers
 {
     public class MoviesController : Controller
     {
-        private readonly MVCAgileProcessContext _context;
+        private readonly MvcMovieContext _context;
 
-        public MoviesController(MVCAgileProcessContext context)
+        public MoviesController(MvcMovieContext context)
         {
             _context = context;
         }
 
         // GET: Movies
-       public async Task<IActionResult> Index(string searchString)
-{
-    if (_context.Movie == null)
-    {
-        return Problem("Entity set 'MvcMovieContext.Movie'  is null.");
-    }
+        public async Task<IActionResult> Index(string movieGenre, string searchString)
+        {
+            if (_context.Movie == null)
+            {
+                return Problem("Entity set 'MvcMovieContext.Movie'  is null.");
+            }
 
-    var movies = from m in _context.Movie
-                select m;
+            // Use LINQ to get list of genres.
+            IQueryable<string> genreQuery = from m in _context.Movie
+                                            orderby m.Genre
+                                            select m.Genre;
+            var movies = from m in _context.Movie
+                         select m;
 
-    if (!String.IsNullOrEmpty(searchString))
-    {
-        movies = movies.Where(s => s.Title!.Contains(searchString));
-    }
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                movies = movies.Where(s => s.Title!.Contains(searchString));
+            }
 
-    return View(await movies.ToListAsync());
-}
+            if (!string.IsNullOrEmpty(movieGenre))
+            {
+                movies = movies.Where(x => x.Genre == movieGenre);
+            }
+
+            var movieGenreVM = new MovieGenreViewModel
+            {
+                Genres = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                Movies = await movies.ToListAsync()
+            };
+
+            return View(movieGenreVM);
+        }
 
         // GET: Movies/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -67,7 +82,7 @@ namespace MVCAgileProcess.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public async Task<IActionResult> Create([Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (ModelState.IsValid)
             {
@@ -99,7 +114,7 @@ namespace MVCAgileProcess.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price")] Movie movie)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,ReleaseDate,Genre,Price,Rating")] Movie movie)
         {
             if (id != movie.Id)
             {
