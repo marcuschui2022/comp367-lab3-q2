@@ -6,6 +6,12 @@
 trigger:
 - main
 
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+
 pool:
   name: lab4
 
