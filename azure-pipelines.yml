@@ -1,0 +1,20 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  name: lab4
+
+steps:
+- script: dotnet restore
+  displayName: 'DotNet Restore'
+
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'DotNet Build'
+
+- script: dotnet publish --configuration $(buildConfiguration) --output $(publishFolder)
+  displayName: 'Publish the Web App'
